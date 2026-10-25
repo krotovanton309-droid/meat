@@ -7,6 +7,7 @@ import Warehouse from './modules/Warehouse';
 import Production from './modules/Production';
 import Procurement from './modules/Procurement';
 import Sales from './modules/Sales';
+import Finance from './modules/Finance';
 import AIAssistant from './modules/AIAssistant';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
             <Route path="/production" element={<Production />} />
             <Route path="/procurement" element={<Procurement />} />
             <Route path="/sales" element={<Sales />} />
+            <Route path="/finance" element={<Finance />} />
             <Route path="/ai" element={<AIAssistant />} />
           </Route>
         </Routes>

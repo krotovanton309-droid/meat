@@ -5,6 +5,7 @@ export type WarehouseType = 'raw' | 'semi' | 'finished' | 'packaging' | 'cold';
 export type OrderStatus = 'draft' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled';
 export type PurchaseStatus = 'planned' | 'ordered' | 'delivered' | 'cancelled';
 export type ProductionStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
+export type PaymentStatus = 'pending' | 'partial' | 'paid' | 'overdue';
 
 // ===== CORE ENTITIES =====
 export interface Product {
@@ -136,6 +137,7 @@ export interface SalesOrder {
   totalAmount: number;
   discount: number;
   documentNumber: string;
+  paymentStatus?: PaymentStatus;
 }
 
 export interface SalesOrderItem {
@@ -143,6 +145,17 @@ export interface SalesOrderItem {
   quantity: number;
   pricePerKg: number;
   amount: number;
+}
+
+// ===== FINANCE =====
+export interface FinanceRecord {
+  id: string;
+  type: 'income' | 'expense';
+  category: string;
+  amount: number; // kopecks
+  date: string;
+  description: string;
+  documentRef?: string;
 }
 
 // ===== DASHBOARD =====

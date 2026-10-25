@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TrendingUp, Plus, Users, FileText, Truck, DollarSign, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { TrendingUp, Plus, Users, FileText, Truck, DollarSign, Clock, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { clients, salesOrders, products, formatWeight, formatMoney, getProductById, getClientById } from '../data/mockData';
 import { OrderStatus } from '../types';
 
@@ -11,6 +11,13 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: Re
   in_progress: { label: 'В работе', color: 'bg-amber-100 text-amber-700', icon: <Clock className="w-3.5 h-3.5" /> },
   completed: { label: 'Выполнен', color: 'bg-green-100 text-green-700', icon: <CheckCircle className="w-3.5 h-3.5" /> },
   cancelled: { label: 'Отменён', color: 'bg-red-100 text-red-700', icon: <AlertCircle className="w-3.5 h-3.5" /> },
+};
+
+const paymentLabels: Record<string, { label: string; color: string }> = {
+  paid: { label: 'Оплачен', color: 'bg-green-100 text-green-700' },
+  pending: { label: 'Ожидает', color: 'bg-amber-100 text-amber-700' },
+  partial: { label: 'Частично', color: 'bg-blue-100 text-blue-700' },
+  overdue: { label: 'Просрочен', color: 'bg-red-100 text-red-700' },
 };
 
 const clientTypeLabels: Record<string, string> = {
@@ -25,6 +32,7 @@ export default function Sales() {
 
   const totalDebt = clients.reduce((s, c) => s + c.balance, 0);
   const totalRevenue = salesOrders.filter(o => o.status === 'completed').reduce((s, o) => s + o.totalAmount, 0);
+  const pendingPayments = salesOrders.filter(o => o.paymentStatus !== 'paid').reduce((s, o) => s + o.totalAmount, 0);
 
   return (
     <div className="space-y-6">
@@ -61,10 +69,10 @@ export default function Sales() {
         </div>
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg"><FileText className="w-5 h-5 text-blue-600" /></div>
+            <div className="p-2 bg-amber-100 rounded-lg"><CreditCard className="w-5 h-5 text-amber-600" /></div>
             <div>
-              <p className="text-xs text-slate-500">Заказов в работе</p>
-              <p className="text-lg font-bold text-slate-800">{salesOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled').length}</p>
+              <p className="text-xs text-slate-500">К оплате</p>
+              <p className="text-lg font-bold text-amber-600">{formatMoney(pendingPayments)}</p>
             </div>
           </div>
         </div>
@@ -106,8 +114,7 @@ export default function Sales() {
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Клиент</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Товары</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Сумма</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Скидка</th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Дата</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Оплата</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Доставка</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Статус</th>
                 </tr>
@@ -132,8 +139,11 @@ export default function Sales() {
                         </div>
                       </td>
                       <td className="px-5 py-3 text-sm font-bold text-slate-800">{formatMoney(o.totalAmount)}</td>
-                      <td className="px-5 py-3 text-sm text-slate-600">{o.discount}%</td>
-                      <td className="px-5 py-3 text-sm text-slate-600">{o.createdDate}</td>
+                      <td className="px-5 py-3">
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${paymentLabels[o.paymentStatus || 'pending'].color}`}>
+                          {paymentLabels[o.paymentStatus || 'pending'].label}
+                        </span>
+                      </td>
                       <td className="px-5 py-3 text-sm text-slate-600">{o.deliveryDate}</td>
                       <td className="px-5 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig[o.status].color}`}>
@@ -190,6 +200,7 @@ export default function Sales() {
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">№ Накладной</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Клиент</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Товары</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Кол-во</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Сумма</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Дата отгрузки</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">Статус</th>
@@ -198,22 +209,26 @@ export default function Sales() {
               <tbody>
                 {salesOrders.filter(o => o.status === 'completed').map(o => {
                   const client = getClientById(o.clientId);
+                  const totalQty = o.items.reduce((s, i) => s + i.quantity, 0);
                   return (
                     <tr key={o.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                       <td className="px-5 py-3 text-sm font-mono text-slate-500">{o.documentNumber}</td>
                       <td className="px-5 py-3 text-sm font-medium text-slate-800">{client?.name}</td>
                       <td className="px-5 py-3">
-                        {o.items.map((item, i) => {
-                          const p = getProductById(item.productId);
-                          return <p key={i} className="text-sm text-slate-600">{p?.name} — {formatWeight(item.quantity)}</p>;
-                        })}
+                        <div className="space-y-0.5">
+                          {o.items.map((item, i) => {
+                            const p = getProductById(item.productId);
+                            return <p key={i} className="text-sm text-slate-600">{p?.name}</p>;
+                          })}
+                        </div>
                       </td>
+                      <td className="px-5 py-3 text-sm text-slate-800">{formatWeight(totalQty)}</td>
                       <td className="px-5 py-3 text-sm font-bold text-slate-800">{formatMoney(o.totalAmount)}</td>
                       <td className="px-5 py-3 text-sm text-slate-600">{o.deliveryDate}</td>
                       <td className="px-5 py-3">
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                           <Truck className="w-3.5 h-3.5" />
-                          Отгружено
+                          Отгружен
                         </span>
                       </td>
                     </tr>

@@ -5,16 +5,15 @@ import {
 } from 'recharts';
 import {
   Package, AlertTriangle, ShoppingCart, DollarSign, TrendingUp, TrendingDown,
-  ArrowUpRight, ArrowDownRight, Factory, Clock
+  ArrowUpRight, ArrowDownRight, Factory, Clock, Bot, Zap, Target, Activity
 } from 'lucide-react';
-import { products, batches, productionOrders, salesOrders, formatWeight, formatMoney } from '../data/mockData';
+import { products, batches, productionOrders, salesOrders, financeRecords, formatWeight, formatMoney } from '../data/mockData';
 
 const COLORS = ['#dc2626', '#f59e0b', '#16a34a', '#2563eb', '#7c3aed', '#0891b2'];
 
 export default function Dashboard() {
   // Calculate stats
   const totalStockValue = batches.reduce((sum, b) => {
-    const product = products.find(p => p.id === b.productId);
     return sum + (b.quantity / 1000) * b.costPerKg;
   }, 0);
 
@@ -32,12 +31,14 @@ export default function Dashboard() {
   const monthlyRevenue = salesOrders.filter(o => o.status === 'completed').reduce((s, o) => s + o.totalAmount, 0);
   const monthlyCost = salesOrders.filter(o => o.status === 'completed').reduce((s, o) => {
     return s + o.items.reduce((is, item) => {
-      const product = products.find(p => p.id === item.productId);
       const batch = batches.find(b => b.productId === item.productId);
       return is + (item.quantity / 1000) * (batch?.costPerKg || 0);
     }, 0);
   }, 0);
   const margin = monthlyRevenue - monthlyCost;
+
+  const totalIncome = financeRecords.filter(f => f.type === 'income').reduce((s, f) => s + f.amount, 0);
+  const totalExpense = financeRecords.filter(f => f.type === 'expense').reduce((s, f) => s + f.amount, 0);
 
   // Chart data
   const stockByCategory = [
@@ -73,6 +74,13 @@ export default function Dashboard() {
     { week: 'Текущая', loss: 1.9 },
   ];
 
+  // AI Insights
+  const aiInsights = [
+    { type: 'warning', text: 'Говядина заканчивается — остаток на 2.4 дня при текущем расходе', icon: AlertTriangle },
+    { type: 'success', text: 'Потери снизились на 25% за последнюю неделю — тренд положительный', icon: TrendingUp },
+    { type: 'info', text: 'Рекомендуем увеличить выпуск "Докторской" — спрос вырос на 12%', icon: Target },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Page title */}
@@ -81,9 +89,38 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-slate-800">Дашборд</h1>
           <p className="text-sm text-slate-500">Обзор производства на 14 января 2026</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Clock className="w-4 h-4" />
-          Обновлено: сегодня, 09:30
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Clock className="w-4 h-4" />
+            Обновлено: сегодня, 09:30
+          </div>
+        </div>
+      </div>
+
+      {/* AI Insights Banner */}
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 bg-white/10 rounded-lg">
+            <Bot className="w-5 h-5 text-red-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">AI-инсайты</h3>
+            <p className="text-xs text-slate-400">Автоматический анализ данных</p>
+          </div>
+          <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 bg-green-500/20 rounded-full">
+            <Zap className="w-3 h-3 text-green-400" />
+            <span className="text-xs text-green-400 font-medium">Активно</span>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {aiInsights.map((insight, i) => (
+            <div key={i} className="flex items-start gap-2.5 p-3 bg-white/5 rounded-xl border border-white/10">
+              <insight.icon className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                insight.type === 'warning' ? 'text-amber-400' : insight.type === 'success' ? 'text-green-400' : 'text-blue-400'
+              }`} />
+              <p className="text-xs text-slate-300 leading-relaxed">{insight.text}</p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -209,7 +246,7 @@ export default function Dashboard() {
         {/* Alerts */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
           <h3 className="font-semibold text-slate-800 mb-4">Внимание</h3>
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[220px] overflow-y-auto">
             {expiredBatches.map(b => {
               const p = products.find(pr => pr.id === b.productId);
               return (
@@ -249,6 +286,57 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Financial Summary */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-800">Финансовый итог</h3>
+            <Activity className="w-5 h-5 text-slate-400" />
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl">
+              <span className="text-sm text-green-700 font-medium">Доходы</span>
+              <span className="text-sm font-bold text-green-800">{formatMoney(totalIncome)}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-red-50 rounded-xl">
+              <span className="text-sm text-red-700 font-medium">Расходы</span>
+              <span className="text-sm font-bold text-red-800">{formatMoney(totalExpense)}</span>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-slate-100 rounded-xl border-2 border-slate-200">
+              <span className="text-sm text-slate-700 font-bold">Результат</span>
+              <span className={`text-sm font-bold ${totalIncome - totalExpense >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                {formatMoney(totalIncome - totalExpense)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-slate-800">Быстрые действия</h3>
+            <Zap className="w-5 h-5 text-slate-400" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <button className="p-3 bg-red-50 hover:bg-red-100 rounded-xl text-left transition-colors">
+              <p className="text-sm font-medium text-red-700">Новый приход</p>
+              <p className="text-xs text-red-500 mt-0.5">Оформить приёмку</p>
+            </button>
+            <button className="p-3 bg-blue-50 hover:bg-blue-100 rounded-xl text-left transition-colors">
+              <p className="text-sm font-medium text-blue-700">Задание</p>
+              <p className="text-xs text-blue-500 mt-0.5">Создать произв.</p>
+            </button>
+            <button className="p-3 bg-green-50 hover:bg-green-100 rounded-xl text-left transition-colors">
+              <p className="text-sm font-medium text-green-700">Закупка</p>
+              <p className="text-xs text-green-500 mt-0.5">Новая заявка</p>
+            </button>
+            <button className="p-3 bg-purple-50 hover:bg-purple-100 rounded-xl text-left transition-colors">
+              <p className="text-sm font-medium text-purple-700">AI-анализ</p>
+              <p className="text-xs text-purple-500 mt-0.5">Спросить помощника</p>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -259,12 +347,6 @@ function StatCard({ title, value, subtitle, icon, color, trend }: {
   color: 'blue' | 'red' | 'amber' | 'green';
   trend: { value: string; up: boolean };
 }) {
-  const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    red: 'bg-red-50 text-red-600',
-    amber: 'bg-amber-50 text-amber-600',
-    green: 'bg-green-50 text-green-600',
-  };
   const iconColors = {
     blue: 'bg-blue-100 text-blue-600',
     red: 'bg-red-100 text-red-600',

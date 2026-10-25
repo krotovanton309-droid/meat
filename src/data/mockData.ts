@@ -1,4 +1,4 @@
-import { Product, Batch, Warehouse, StockMovement, TechCard, ProductionOrder, Supplier, PurchaseOrder, Client, SalesOrder } from '../types';
+import { Product, Batch, Warehouse, StockMovement, TechCard, ProductionOrder, Supplier, PurchaseOrder, Client, SalesOrder, FinanceRecord } from '../types';
 
 // ===== WAREHOUSES =====
 export const warehouses: Warehouse[] = [
@@ -54,6 +54,9 @@ export const stockMovements: StockMovement[] = [
   { id: 'sm5', type: 'in', productId: 'p8', warehouseId: 'w2', quantity: 18000, date: '2026-01-13', reason: 'Выпуск из производства', batchId: 'b8', documentNumber: 'ВН-001' },
   { id: 'sm6', type: 'out', productId: 'p10', warehouseId: 'w3', quantity: 5000, date: '2026-01-13', reason: 'Отгрузка клиенту', batchId: 'b10', documentNumber: 'ТН-001' },
   { id: 'sm7', type: 'out', productId: 'p12', warehouseId: 'w3', quantity: 8000, date: '2026-01-14', reason: 'Отгрузка клиенту', batchId: 'b12', documentNumber: 'ТН-002' },
+  { id: 'sm8', type: 'in', productId: 'p3', warehouseId: 'w1', quantity: 45000, date: '2026-01-12', reason: 'Приёмка от поставщика', batchId: 'b3', documentNumber: 'ПН-003' },
+  { id: 'sm9', type: 'in', productId: 'p4', warehouseId: 'w1', quantity: 30000, date: '2026-01-09', reason: 'Приёмка от поставщика', batchId: 'b4', documentNumber: 'ПН-004' },
+  { id: 'sm10', type: 'transfer', productId: 'p8', warehouseId: 'w2', toWarehouseId: 'w3', quantity: 5000, date: '2026-01-14', reason: 'Перемещение на склад ГП', batchId: 'b8', documentNumber: 'ПП-001' },
 ];
 
 // ===== TECH CARDS =====
@@ -137,10 +140,24 @@ export const clients: Client[] = [
 
 // ===== SALES ORDERS =====
 export const salesOrders: SalesOrder[] = [
-  { id: 'so1', clientId: 'c1', items: [{ productId: 'p10', quantity: 20000, pricePerKg: 48000, amount: 960000 }, { productId: 'p12', quantity: 15000, pricePerKg: 42000, amount: 630000 }], status: 'completed', createdDate: '2026-01-12', deliveryDate: '2026-01-13', totalAmount: 1590000, discount: 8, documentNumber: 'СЧ-001' },
-  { id: 'so2', clientId: 'c2', items: [{ productId: 'p11', quantity: 10000, pricePerKg: 62000, amount: 620000 }], status: 'completed', createdDate: '2026-01-13', deliveryDate: '2026-01-14', totalAmount: 620000, discount: 5, documentNumber: 'СЧ-002' },
-  { id: 'so3', clientId: 'c3', items: [{ productId: 'p10', quantity: 5000, pricePerKg: 48000, amount: 240000 }, { productId: 'p12', quantity: 8000, pricePerKg: 42000, amount: 336000 }], status: 'in_progress', createdDate: '2026-01-14', deliveryDate: '2026-01-15', totalAmount: 576000, discount: 3, documentNumber: 'СЧ-003' },
-  { id: 'so4', clientId: 'c4', items: [{ productId: 'p11', quantity: 30000, pricePerKg: 62000, amount: 1860000 }, { productId: 'p10', quantity: 25000, pricePerKg: 48000, amount: 1200000 }], status: 'confirmed', createdDate: '2026-01-14', deliveryDate: '2026-01-16', totalAmount: 3060000, discount: 12, documentNumber: 'СЧ-004' },
+  { id: 'so1', clientId: 'c1', items: [{ productId: 'p10', quantity: 20000, pricePerKg: 48000, amount: 960000 }, { productId: 'p12', quantity: 15000, pricePerKg: 42000, amount: 630000 }], status: 'completed', createdDate: '2026-01-12', deliveryDate: '2026-01-13', totalAmount: 1590000, discount: 8, documentNumber: 'СЧ-001', paymentStatus: 'paid' },
+  { id: 'so2', clientId: 'c2', items: [{ productId: 'p11', quantity: 10000, pricePerKg: 62000, amount: 620000 }], status: 'completed', createdDate: '2026-01-13', deliveryDate: '2026-01-14', totalAmount: 620000, discount: 5, documentNumber: 'СЧ-002', paymentStatus: 'paid' },
+  { id: 'so3', clientId: 'c3', items: [{ productId: 'p10', quantity: 5000, pricePerKg: 48000, amount: 240000 }, { productId: 'p12', quantity: 8000, pricePerKg: 42000, amount: 336000 }], status: 'in_progress', createdDate: '2026-01-14', deliveryDate: '2026-01-15', totalAmount: 576000, discount: 3, documentNumber: 'СЧ-003', paymentStatus: 'pending' },
+  { id: 'so4', clientId: 'c4', items: [{ productId: 'p11', quantity: 30000, pricePerKg: 62000, amount: 1860000 }, { productId: 'p10', quantity: 25000, pricePerKg: 48000, amount: 1200000 }], status: 'confirmed', createdDate: '2026-01-14', deliveryDate: '2026-01-16', totalAmount: 3060000, discount: 12, documentNumber: 'СЧ-004', paymentStatus: 'pending' },
+];
+
+// ===== FINANCE RECORDS =====
+export const financeRecords: FinanceRecord[] = [
+  { id: 'f1', type: 'income', category: 'Продажи', amount: 1590000, date: '2026-01-13', description: 'Оплата по счёту СЧ-001', documentRef: 'СЧ-001' },
+  { id: 'f2', type: 'income', category: 'Продажи', amount: 620000, date: '2026-01-14', description: 'Оплата по счёту СЧ-002', documentRef: 'СЧ-002' },
+  { id: 'f3', type: 'expense', category: 'Закупки', amount: 5200000, date: '2026-01-10', description: 'Оплата закупки говядины', documentRef: 'ЗК-001' },
+  { id: 'f4', type: 'expense', category: 'Закупки', amount: 1400000, date: '2026-01-12', description: 'Оплата закупки курицы', documentRef: 'ЗК-002' },
+  { id: 'f5', type: 'expense', category: 'Зарплата', amount: 850000, date: '2026-01-10', description: 'Зарплата за первую половину января' },
+  { id: 'f6', type: 'expense', category: 'Коммунальные', amount: 180000, date: '2026-01-05', description: 'Электричество и водоснабжение' },
+  { id: 'f7', type: 'expense', category: 'Аренда', amount: 350000, date: '2026-01-01', description: 'Аренда помещений за январь' },
+  { id: 'f8', type: 'expense', category: 'Логистика', amount: 95000, date: '2026-01-13', description: 'Доставка продукции клиентам' },
+  { id: 'f9', type: 'income', category: 'Продажи', amount: 450000, date: '2026-01-11', description: 'Оплата по счёту СЧ-005 (пред. период)' },
+  { id: 'f10', type: 'expense', category: 'Обслуживание', amount: 65000, date: '2026-01-08', description: 'ТО холодильного оборудования' },
 ];
 
 // ===== HELPER FUNCTIONS =====
@@ -168,4 +185,25 @@ export function getSupplierById(id: string): Supplier | undefined {
 
 export function getClientById(id: string): Client | undefined {
   return clients.find(c => c.id === id);
+}
+
+export function getTechCardById(id: string): TechCard | undefined {
+  return techCards.find(t => t.id === id);
+}
+
+// Calculate product cost from tech card
+export function calculateProductCost(productId: string): number {
+  const tc = techCards.find(t => t.productId === productId);
+  if (!tc) {
+    const batch = batches.find(b => b.productId === productId);
+    return batch?.costPerKg || 0;
+  }
+  let cost = 0;
+  for (const ing of tc.ingredients) {
+    const p = products.find(pr => pr.id === ing.productId);
+    cost += (ing.quantity / 1000) * (p?.purchasePricePerKg || 0);
+  }
+  // Adjust for output ratio
+  const totalInput = tc.ingredients.reduce((s, i) => s + i.quantity, 0);
+  return cost * (totalInput / tc.plannedOutput);
 }

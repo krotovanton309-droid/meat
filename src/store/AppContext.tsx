@@ -16,12 +16,14 @@ const AppContext = createContext<AppState | null>(null);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([
-    { id: '1', role: 'assistant', content: 'Здравствуйте! Я AI-помощник MEAT AI OS. Могу помочь с вопросами по остаткам, себестоимости, потерям, закупкам и производству. Что вас интересует?', timestamp: new Date().toISOString() }
+    { id: '1', role: 'assistant', content: 'Здравствуйте! Я AI-помощник MEAT AI OS. Могу помочь с вопросами по остаткам, себестоимости, потерям, закупкам, финансам и производству. Что вас интересует?', timestamp: new Date().toISOString() }
   ]);
   const [notifications, setNotifications] = useState<string[]>([
     '⚠️ Партия Б-2026-006 (Говядина) просрочена!',
     '📦 Заявка ЗК-003 ожидает подтверждения',
     '🏭 Производственное задание ПО-002 в работе',
+    '💰 Дебиторская задолженность: 431 000 ₽',
+    '📊 Потери снизились на 25% — тренд положительный',
   ]);
 
   const addAiMessage = (msg: AIMessage) => {

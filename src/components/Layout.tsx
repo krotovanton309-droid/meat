@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { useApp } from '../store/AppContext';
 import {
   LayoutDashboard, Warehouse, Factory, ShoppingCart, TrendingUp,
-  Bot, Menu, X, Bell, ChevronDown, Beef
+  Bot, Menu, X, Bell, ChevronDown, Beef, DollarSign
 } from 'lucide-react';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { path: '/production', label: 'Производство', icon: Factory },
   { path: '/procurement', label: 'Закупки', icon: ShoppingCart },
   { path: '/sales', label: 'Продажи', icon: TrendingUp },
+  { path: '/finance', label: 'Финансы', icon: DollarSign },
   { path: '/ai', label: 'AI-помощник', icon: Bot },
 ];
 

@@ -1,13 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, Sparkles, Package, Factory, TrendingUp, ShoppingCart, Lightbulb } from 'lucide-react';
+import { Bot, Send, Sparkles, Package, Factory, TrendingUp, ShoppingCart, Lightbulb, Zap, BarChart3 } from 'lucide-react';
 import { useApp } from '../store/AppContext';
-import { products, batches, productionOrders, salesOrders, purchaseOrders, formatWeight, formatMoney } from '../data/mockData';
+import { products, batches, productionOrders, salesOrders, purchaseOrders, financeRecords, formatWeight, formatMoney } from '../data/mockData';
 
 const quickQuestions = [
   { icon: Package, text: 'Какие остатки на складе?', color: 'text-blue-600 bg-blue-50' },
   { icon: Factory, text: 'Есть ли отклонения план/факт?', color: 'text-purple-600 bg-purple-50' },
   { icon: TrendingUp, text: 'Какая себестоимость продукции?', color: 'text-green-600 bg-green-50' },
   { icon: ShoppingCart, text: 'Что нужно закупить?', color: 'text-amber-600 bg-amber-50' },
+  { icon: BarChart3, text: 'Анализ потерь', color: 'text-red-600 bg-red-50' },
+  { icon: Zap, text: 'Финансовый итог месяца', color: 'text-indigo-600 bg-indigo-50' },
 ];
 
 function generateResponse(question: string): string {
@@ -44,12 +46,25 @@ function generateResponse(question: string): string {
   if (q.includes('потер') || q.includes('брак')) {
     return `📉 **Анализ потерь:**\n\n**Потери по неделям:**\n• Неделя 1: 3.2%\n• Неделя 2: 2.8%\n• Неделя 3: 4.1% ← пик\n• Неделя 4: 2.5%\n• Текущая: 1.9% ← улучшение!\n\n**Основные источники потерь:**\n• Обрезка сырья: 60% потерь\n• Усушка при копчении: 25%\n• Брак упаковки: 15%\n\n💡 Тренд положительный — потери снижаются. Рекомендую:\n1. Проверить настройки фаршесмесителя (неделя 3 была аномальной)\n2. Оптимизировать режимы сушки\n3. Рассмотреть замену поставщика оболочки`;
   }
+
+  if (q.includes('финанс') || q.includes('деньг') || q.includes('итог') || q.includes('прибыл')) {
+    const income = financeRecords.filter(f => f.type === 'income').reduce((s, f) => s + f.amount, 0);
+    const expense = financeRecords.filter(f => f.type === 'expense').reduce((s, f) => s + f.amount, 0);
+    const profit = income - expense;
+    
+    return `💵 **Финансовый итог месяца:**\n\n**Доходы:** ${formatMoney(income)}\n**Расходы:** ${formatMoney(expense)}\n**Прибыль:** ${formatMoney(profit)}\n**Рентабельность:** ${((profit / income) * 100).toFixed(1)}%\n\n**Структура расходов:**\n• Закупки сырья: ${formatMoney(6600000)} (81%)\n• Зарплата: ${formatMoney(850000)} (10%)\n• Аренда: ${formatMoney(350000)} (4%)\n• Прочее: ${formatMoney(340000)} (5%)\n\n💡 **Рекомендации:**\n• Дебиторская задолженность: ${formatMoney(431000)} — усилить контроль оплат\n• Закупки — основная статья. Рассмотрите фиксацию цен на квартал\n• Маржа по "Фаршу домашнему" ниже средней — пересмотрите рецептуру`;
+  }
   
   if (q.includes('технолог') || q.includes('рецептур') || q.includes('карт')) {
     return `📋 **Технологические карты:**\n\nВсего активных тех. карт: 4\n\n1. **Колбаса "Докторская"** (v2)\n   - Говядина 70%, Шпик 15%, Специи 3.3%\n   - Выход: 883г, Потери: 11.7%\n\n2. **Колбаса "Краковская"** (v1)\n   - Говядина 50%, Свинина 35%, Шпик 10%\n   - Выход: 992г, Потери: 0.8%\n\n3. **Сосиски "Молочные"** (v1)\n   - Курица 50%, Свинина 30%, Шпик 15%\n   - Выход: 976г, Потери: 2.4%\n\n4. **Фарш говяжий** (v1)\n   - Говядина 95%, Специи 2%\n   - Выход: 970г, Потери: 3%\n\n💡 Могу сгенерировать черновик новой тех. карты. Опишите желаемый продукт!`;
   }
+
+  if (q.includes('клиент') || q.includes('продаж') || q.includes('заказ')) {
+    const activeOrders = salesOrders.filter(o => o.status !== 'completed' && o.status !== 'cancelled');
+    return `📦 **Статус продаж:**\n\n**Активные заказы:** ${activeOrders.length}\n• СЧ-003: Магазин "У дома" — ${formatMoney(576000)} (в работе)\n• СЧ-004: Оптовая база №7 — ${formatMoney(3060000)} (подтверждён)\n\n**Дебиторская задолженность:**\n• Супермаркет "Продукты": ${formatMoney(156000)}\n• Магазин "У дома": ${formatMoney(45000)}\n• Оптовая база №7: ${formatMoney(230000)}\n• Итого: ${formatMoney(431000)}\n\n💡 Крупнейший должник — "Оптовая база №7". Рекомендую связаться для уточнения сроков оплаты.`;
+  }
   
-  return `🤖 Я могу помочь вам с:\n\n• **Остатки и склад** — текущие запасы, сроки годности\n• **Производство** — план/факт, отклонения, задания\n• **Себестоимость** — расчёт маржи, анализ затрат\n• **Закупки** — прогноз потребности, дефицит\n• **Потери** — анализ и рекомендации по снижению\n• **Технологические карты** — просмотр и генерация\n\nЗадайте конкретный вопрос, и я проанализирую данные!`;
+  return `🤖 Я могу помочь вам с:\n\n• **Остатки и склад** — текущие запасы, сроки годности\n• **Производство** — план/факт, отклонения, задания\n• **Себестоимость** — расчёт маржи, анализ затрат\n• **Закупки** — прогноз потребности, дефицит\n• **Потери** — анализ и рекомендации по снижению\n• **Финансы** — доходы, расходы, прибыль\n• **Продажи** — заказы, клиенты, дебиторка\n• **Технологические карты** — просмотр и генерация\n\nЗадайте конкретный вопрос, и я проанализирую данные!`;
 }
 
 export default function AIAssistant() {
@@ -172,7 +187,7 @@ export default function AIAssistant() {
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSend()}
-                placeholder="Задайте вопрос по производству, остаткам, закупкам..."
+                placeholder="Задайте вопрос по производству, остаткам, закупкам, финансам..."
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 pr-12"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
